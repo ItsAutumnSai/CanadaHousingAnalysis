@@ -1,0 +1,181 @@
+CANADA HOUSING MARKET - ANALYTICS PLAN (DRAFT)
+==============================================
+
+Purpose
+-------
+Questions the dashboard can answer, grouped into the three levels of
+business analytics:
+
+  1. Descriptive  - What does the market look like?        (mostly done in the dashboard)
+  2. Diagnostic   - Why do prices differ?                  (next step)
+  3. Predictive   - What price should we expect?           (later step)
+
+Data limits to keep in mind for every question
+----------------------------------------------
+- Snapshot only: no listing/sale dates, so no trends over time and no
+  forecasting of future prices. "Predictive" here means estimating the
+  price of a home from its characteristics, not predicting the market.
+- Asking prices, not sale prices.
+- British Columbia has more than half the listings. Manitoba (68), Yukon (40)
+  and the Northwest Territories (13) are too small to trust on their own.
+  Nunavut has no data.
+- Lot size (Acreage) is missing for about half the listings (stored as 0).
+- Heating, Basement, Exterior, Flooring and Roof are often missing
+  (Roof is reported for only about 20% of listings).
+- Prices are skewed by a few very expensive listings, so use the MEDIAN, not
+  the average, when comparing groups.
+
+
+=====================================================================
+1. DESCRIPTIVE ANALYSIS - "What does the market look like?"
+=====================================================================
+Already covered by the dashboard visuals.
+
+Market size and supply
+  D1. How many listings are there in total, and per province?
+      -> KPI "Total listings", chart "Listings by province"
+  D2. Which cities have the most listings?
+      -> Table "Top 15 cities by number of listings"
+  D3. Where are listings concentrated geographically?
+      -> Geographic Map (heatmap)
+
+Price level
+  D4. What is the typical (median) asking price nationally?
+      -> KPI "Median price"
+  D5. How far apart are the median and the average price, and what does that say
+      about expensive outliers?
+      -> KPIs "Median price" vs "Average price", "Price distribution" histogram
+  D6. Which provinces are the most and least expensive?
+      -> Chart "Median price by province"
+  D7. Where are the expensive and the affordable areas on the map?
+      -> Geographic Map (individual listings colored by price)
+  D8. What is the typical price per sqft (or m²), overall and by city?
+      -> KPI "Median price / sqft", Top 15 cities table
+
+Housing stock
+  D9.  What mix of property types is for sale (houses vs condos, etc.)?
+       -> Chart "Property type mix"
+  D10. How big are homes by property type (floor area and lot size)?
+       -> "Floor area by property type", "Lot size by property type"
+  D11. How does the median price change with the number of bedrooms?
+       -> "Median price by number of bedrooms"
+  D12. How common are features like a garage, fireplace, balcony, pool, waterfront?
+       -> "How common is each feature?"
+  D13. What are the most common heating, basement, exterior, flooring, roof and
+       sewer types?
+       -> "Breakdown by home detail"
+
+Suggested descriptive insights to write up
+  - "X% of listings are in BC; the median BC price is $Y vs $Z nationally."
+  - "Single Family homes make up X% of listings; condos make up Y%."
+  - "The average price is X% higher than the median, showing a small number of
+     very expensive listings pull the average up."
+
+
+=====================================================================
+2. DIAGNOSTIC ANALYSIS - "Why do prices differ?"
+=====================================================================
+Goal: explain the differences seen in the descriptive part. Main tools are
+comparisons of medians between groups, correlation, and cross-tabs. Remember:
+these show RELATIONSHIPS, not proof of cause.
+
+Location
+  G1. Are BC/Ontario homes more expensive because they are bigger, or because the
+      location costs more?
+      -> Compare median price per sqft by province (removes the size effect).
+  G2. Within one province, how much do prices differ between cities?
+      (e.g. Vancouver vs Kelowna vs Prince George)
+      -> Median price and price per sqft by city, filtered to one province.
+  G3. Do urban areas (big cities) cost more per sqft than small towns?
+      -> Group cities by number of listings (large / medium / small) and compare.
+
+Size and layout
+  G4. How strongly is price related to floor area, bedrooms and bathrooms?
+      -> Correlation table (Price vs Square Footage, Bedrooms, Bathrooms, Acreage).
+  G5. Does each extra bedroom add a steady amount, or does the gain level off?
+      -> Price per bedroom step (1->2, 2->3, ...).
+  G6. Is a big lot (acreage) linked to higher prices, or are big lots mostly in
+      cheap rural areas?
+      -> Price vs lot size, split by province or urban/rural.
+
+Property type
+  G7. Why are condos cheaper than single-family homes - is it only size?
+      -> Compare price per sqft by property type.
+  G8. Does the property type mix explain why some provinces look cheaper?
+      (e.g. a province with many condos will have a lower median)
+      -> Median price by province AND property type (cross-tab / heatmap table).
+
+Features
+  G9.  How much higher is the median price of homes WITH vs WITHOUT a garage,
+       fireplace, balcony, pool, waterfront?
+       -> "Feature premium" comparison (removed from dashboard for now; add back here).
+  G10. Is the feature premium real, or is it because those homes are bigger or in
+       pricier areas?
+       -> Repeat G9 within one property type and one province, or compare price per sqft.
+  G11. Are waterfront homes concentrated in specific regions that are already expensive?
+       -> Map of waterfront listings + their province breakdown.
+  G12. Do heating type or basement type relate to price? (e.g. heat pump homes being
+       newer/more expensive)
+       -> Median price by Heating / Basement category.
+
+Suggested diagnostic visuals to add later
+  - Correlation heatmap of the numeric columns
+  - Median price per sqft by province
+  - Province x Property Type table of median prices
+  - Feature premium bar chart (with vs without, %)
+  - Box plots of price by category (Heating, Basement, Exterior)
+
+
+=====================================================================
+3. PREDICTIVE ANALYSIS - "What price should we expect?"
+=====================================================================
+Goal: build a model that estimates a listing's asking price from its
+characteristics. NOTE: no dates means we cannot forecast future prices.
+
+Business questions
+  P1. Given a home's province, city, type, size, bedrooms, bathrooms and
+      features, what asking price would we expect?
+      -> Price estimator form in the dashboard.
+  P2. Which listings look overpriced or underpriced compared with similar homes?
+      -> Compare actual price vs predicted price; flag big gaps.
+      (Useful for buyers/investors looking for "deals".)
+  P3. Which factors matter most for price?
+      -> Feature importance from the model (e.g. location vs size vs features).
+  P4. How much value would adding a feature (e.g. a garage or extra bathroom)
+      add, according to the model?
+      -> "What-if" using the estimator: change one input, keep the rest the same.
+  P5. Can we classify a listing into a price band (budget / mid / luxury)?
+      -> Simple classification as an alternative to predicting the exact price.
+
+Possible approach (keep simple and explainable)
+  - Inputs: Province, Property Type, Bedrooms, Bathrooms, Square Footage, Acreage,
+    Garage, Parking, Fireplace, Waterfront, Pool, Garden, Balcony,
+    (optionally Latitude/Longitude for location)
+  - Target: Price (use log of price because prices are very skewed)
+  - Models to try:
+      1) Linear Regression   - baseline, easy to explain (each input has a +/- effect)
+      2) Random Forest       - usually more accurate, gives feature importance
+  - Split data 80% train / 20% test
+  - Measure: R-squared (how much of the price variation the model explains) and
+    MAE (average error in dollars), compared against a simple baseline
+    such as "predict the median price of that province"
+  - Remove extreme outliers first (e.g. listings above the 99th percentile)
+
+Risks / things to mention in the presentation
+  - Model predicts ASKING price, not the final sale price.
+  - Weak for provinces with very few listings (MB, YT, NT).
+  - Missing details (roof, flooring, ...) are left out of the model, so its
+    accuracy is limited.
+  - It shows what similar homes are listed for; it is not an official valuation.
+
+
+=====================================================================
+Suggested dashboard structure for the final version
+=====================================================================
+  Tab 1  Market Overview        (descriptive)  - existing
+  Tab 2  Geographic Map         (descriptive)  - existing
+  Tab 3  Property Characteristics (descriptive) - existing
+  Tab 4  Home Features          (descriptive)  - existing
+  Tab 5  Price Drivers          (diagnostic)   - NEW: G1, G4, G7, G8, G9/G10
+  Tab 6  Price Estimator        (predictive)   - NEW: P1, P2, P3
+  Tab 7  Data / About the Data                 - existing
